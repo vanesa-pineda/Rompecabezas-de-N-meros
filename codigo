@@ -1,0 +1,99 @@
+import pygame
+import random
+import time
+
+# Configuración
+WIDTH, HEIGHT = 400, 400
+GRID_SIZE = 4
+TILE_SIZE = WIDTH // GRID_SIZE
+FONT_SIZE = 40
+BG_COLOR = (50, 50, 50)
+TILE_COLOR = (100, 200, 250)
+TEXT_COLOR = (255, 255, 255)
+
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT + 50))
+pygame.display.set_caption("Rompecabezas de Números")
+font = pygame.font.Font(None, FONT_SIZE)
+
+# Función para generar el tablero
+def generate_board():
+    numbers = list(range(1, GRID_SIZE * GRID_SIZE)) + [None]
+    random.shuffle(numbers)
+    return [numbers[i * GRID_SIZE:(i + 1) * GRID_SIZE] for i in range(GRID_SIZE)]
+
+# Encuentra la posición del espacio vacío
+def find_empty(board):
+    for i, row in enumerate(board):
+        for j, val in enumerate(row):
+            if val is None:
+                return i, j
+
+# Dibuja el tablero
+def draw_board(board, moves):
+    screen.fill(BG_COLOR)
+    for i in range(GRID_SIZE):
+        for j in range(GRID_SIZE):
+            num = board[i][j]
+            if num is not None:
+                pygame.draw.rect(screen, TILE_COLOR, (j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+                text = font.render(str(num), True, TEXT_COLOR)
+                screen.blit(text, (j * TILE_SIZE + TILE_SIZE // 3, i * TILE_SIZE + TILE_SIZE // 3))
+    
+    # Mostrar puntuación
+    score_text = font.render(f"Movimientos: {moves}", True, TEXT_COLOR)
+    screen.blit(score_text, (10, HEIGHT + 10))
+    pygame.display.flip()
+
+# Intercambiar fichas
+def swap_tiles(board, i1, j1, i2, j2):
+    board[i1][j1], board[i2][j2] = board[i2][j2], board[i1][j1]
+
+# Comprueba si el tablero está ordenado
+def is_solved(board):
+    expected = list(range(1, GRID_SIZE * GRID_SIZE)) + [None]
+    flat_board = [num for row in board for num in row]
+    return flat_board == expected
+
+# Juego principal
+def game_loop():
+    board = generate_board()
+    moves = 0
+    running = True
+    while running:
+        draw_board(board, moves)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                empty_i, empty_j = find_empty(board)
+                if event.key == pygame.K_UP and empty_i < GRID_SIZE - 1:
+                    swap_tiles(board, empty_i, empty_j, empty_i + 1, empty_j)
+                    moves += 1
+                elif event.key == pygame.K_DOWN and empty_i > 0:
+                    swap_tiles(board, empty_i, empty_j, empty_i - 1, empty_j)
+                    moves += 1
+                elif event.key == pygame.K_LEFT and empty_j < GRID_SIZE - 1:
+                    swap_tiles(board, empty_i, empty_j, empty_i, empty_j + 1)
+                    moves += 1
+                elif event.key == pygame.K_RIGHT and empty_j > 0:
+                    swap_tiles(board, empty_i, empty_j, empty_i, empty_j - 1)
+                    moves += 1
+                
+                if is_solved(board):
+                    draw_board(board, moves)
+                    pygame.time.delay(500)
+                    print("¡Felicidades! Has resuelto el rompecabezas en", moves, "movimientos.")
+                    running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                tile_j, tile_i = x // TILE_SIZE, y // TILE_SIZE
+                empty_i, empty_j = find_empty(board)
+                
+                if (abs(tile_i - empty_i) == 1 and tile_j == empty_j) or (abs(tile_j - empty_j) == 1 and tile_i == empty_i):
+                    swap_tiles(board, tile_i, tile_j, empty_i, empty_j)
+                    moves += 1
+
+    pygame.quit()
+
+game_loop()
