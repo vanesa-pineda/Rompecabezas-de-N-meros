@@ -28,12 +28,4 @@ pip install pygame
 3. Ordena los números del 1 al 15 y deja el espacio vacío en la esquina inferior derecha.
 4. Una vez que completes el rompecabezas, el juego te felicitará.
 
-## Captura de pantalla
-_(Agrega aquí una imagen del juego en ejecución)_
-
-## Contribución
-Si deseas mejorar el juego, ¡siéntete libre de hacer un fork y enviar un pull request!
-
-## Licencia
-Este proyecto está bajo la licencia MIT.
 
